@@ -9,33 +9,27 @@ This Better Than Wolves CE 3.0.0 addon dynamically adjusts the brightness of the
 
 ## Features
 
-When this addon is active:
-
 ### ✨ Dynamic Brightness
 
 * **Light-Aware HUD**: The HUD responds to the light level at the player's eye position, making low-light areas darker and bright areas fully visible.
 * **Vanilla blocks and ambient light** influence HUD brightness naturally—torches, sunlight, and even moon phases affect how bright your interface appears.
 * The effect is limited to the HUD; it does **not** affect world lighting or gameplay mechanics.
-
-### 🌅 Smooth Transitions
-
 * Brightness changes are **smoothed across frames** to reduce abrupt jumps and flickering.
-* Even in total darkness, a **minimum brightness threshold** ensures the HUD remains visible and usable.
-* Brightening happens quickly (when entering light), while darkening is gradual (when entering darkness)—mimicking natural eye adaptation.
-
-### 🌓 Moon Phase & Day/Night Awareness
-
-* The addon accounts for **moon phases**, providing slightly more ambient light during a full moon and less during a new moon.
-* Day/night cycles naturally affect HUD brightness, with sunrise and sunset creating smooth transitions.
 
 ### 💻 Client-Side Only
-
 * All effects and calculations occur on the **client side**.
 * No changes to the server, world data, or other players' experiences.
 * Perfect for multiplayer servers—install it yourself without affecting anyone else.
 
-### 🎬 Content Creation Bonus
+### 🕯️ Thoughtful Adjustments 
+* Even in total darkness, a **minimum brightness threshold** ensures the HUD remains visible and usable.
+* Brightening happens quickly (when entering light), while darkening is gradual (when entering darkness)—mimicking natural eye adaptation.
 
+### 🌓 Moon Phase & Day/Night Awareness
+* The addon accounts for **moon phases**, providing slightly more ambient light during a full moon and less during a new moon.
+* Day/night cycles naturally affect HUD brightness, with smooth transitions at sunrise and sunset.
+
+### 🎬 Bonus Use
 * Could help in the **video editing process** if you need to brighten footage while keeping HUD elements visible in dark scenes.
 
 -----
