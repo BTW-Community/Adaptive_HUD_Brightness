@@ -8,8 +8,9 @@
     "Abigail Read"
   ],
   "contact": {
-    "homepage": "https://github.com/AbbyRead/Adaptive_HUD_Brightness",
-    "sources": "https://github.com/AbbyRead/Adaptive_HUD_Brightness"
+    "homepage": "https://github.com/BTW-Community/Adaptive_HUD_Brightness",
+    "sources": "https://github.com/BTW-Community/Adaptive_HUD_Brightness",
+    "issues": "https://github.com/BTW-Community/Adaptive_HUD_Brightness/issues"
   },
   "license": "0BSD",
   "icon": "assets/abbyread/icon.png",
