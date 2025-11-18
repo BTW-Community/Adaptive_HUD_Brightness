@@ -14,42 +14,65 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@SuppressWarnings({"DiscouragedShift", "UnnecessaryLocalVariable", "RedundantIfStatement", "FieldCanBeLocal"})
-@Mixin(GuiIngame.class)
+import java.lang.reflect.Method;
+
+@SuppressWarnings({"FieldCanBeLocal"})
+@Mixin(value = GuiIngame.class, priority = 2000)
 public abstract class GuiIngameMixin {
+
     @Final
     @Shadow
     private Minecraft mc;
 
-    // --- Compatibility ---
-    // Freelook is of particular concern because it's awesome, but it prevents the crosshair
-    //   reticule from dimming the way it should when using Adaptive HUD Brightness.
+    // --- FreeLook compatibility ---
     @Unique
-    private BTWAddon getFreeLookAddon() {
-        // "btwfreelook" is the modID of jeffinitup's btw-freelook addon
-        BTWAddon addon = AddonHandler.getModByID("btwfreelook");
-        return addon; // returns null if not loaded
-    }
+    private BTWAddon freeLookAddon;
+
     @Unique
-    private boolean isFreeLookActive() {
-        BTWAddon freeLook = getFreeLookAddon();
-        if (freeLook == null) return false;
-        return true; // freelook is running
-    }
+    private Method getZoomOverlayFacMethod;
+
     @Unique
-    private void applyBrightnessCompat() {
-        if (isFreeLookActive()) {
-            // Opportunity to do something special if FreeLookAddon is present
-            float b = getHudBrightness();
-            GL11.glColor4f(b, b, b, 1.0F);
-        } else {
-            // Default behavior
-            applyBrightness();
+    private Method getFreelookFacMethod;
+
+    @Unique
+    private void initFreeLookAddon() {
+        freeLookAddon = AddonHandler.getModByID("btwfreelook");
+        if (freeLookAddon != null) {
+            try {
+                Class<?> cameraEventClass = Class.forName("btw.community.jeffyjamzhd.freelook.event.CameraEvent");
+                getZoomOverlayFacMethod = cameraEventClass.getMethod("getZoomOverlayFac");
+                getFreelookFacMethod = cameraEventClass.getMethod("getFreelookFac");
+            } catch (Exception e) {
+                // If class or methods are missing, disable FreeLook integration
+                freeLookAddon = null;
+                getZoomOverlayFacMethod = null;
+                getFreelookFacMethod = null;
+            }
         }
     }
 
+    @Unique
+    private boolean isFreeLookActive() {
+        if (freeLookAddon == null) {
+            initFreeLookAddon();
+        }
+        return freeLookAddon != null;
+    }
 
-    // --- Utility methods ---
+    @Unique
+    private float getFreeLookFactor() {
+        if (!isFreeLookActive()) return 1.0F;
+        try {
+            float zoom = (float) getZoomOverlayFacMethod.invoke(null);
+            float freelook = (float) getFreelookFacMethod.invoke(null);
+            return 1.0F - Math.min(zoom + freelook, 1.0F);
+        } catch (Exception e) {
+            // Fallback if reflection fails
+            return 1.0F;
+        }
+    }
+
+    // --- HUD brightness helpers ---
     @Unique
     private float getHudBrightness() {
         if (mc == null || mc.thePlayer == null || ((MinecraftAccessor) mc).getIsGamePaused()) return 1.0F;
@@ -58,8 +81,8 @@ public abstract class GuiIngameMixin {
 
     @Unique
     private void applyBrightness() {
-        float b = getHudBrightness();
-        GL11.glColor4f(b, b, b, 1.0F);
+        float fac = getFreeLookFactor() * getHudBrightness();
+        GL11.glColor4f(fac, fac, fac, 1.0F);
     }
 
     @Unique
@@ -67,35 +90,39 @@ public abstract class GuiIngameMixin {
         GL11.glColor4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
-    // --- Action Bar (health, armor, food) dimming ---
-    @Inject(
-            method = "renderGameOverlay",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/src/GuiIngame;func_110327_a(II)V", // player stats render method
-                    shift = At.Shift.BEFORE
-            )
-    )
-    private void prePlayerStatsRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
-        if (isFreeLookActive()) {
-            applyBrightnessCompat();
-        } else {
-            applyBrightness();
-        }
+    // --- Crosshair dimming ---
+    @Inject(method = "renderGameOverlay(FZII)V",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/src/GuiIngame;drawTexturedModalRect(IIIIII)V",
+                    ordinal = 2))
+    private void crosshairGLBegin(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
+        applyBrightness();
     }
 
-    @Inject(
-            method = "renderGameOverlay",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/src/GuiIngame;func_110327_a(II)V",
-                    shift = At.Shift.AFTER
-            )
-    )
-    private void postPlayerStatsRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
+    @Inject(method = "renderGameOverlay(FZII)V",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/src/GuiIngame;drawTexturedModalRect(IIIIII)V",
+                    ordinal = 2,
+                    shift = At.Shift.AFTER))
+    private void crosshairGLEnd(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
         resetColor();
     }
 
+    // --- Action Bar (health, armor, food) dimming ---
+    @Inject(method = "renderGameOverlay",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/src/GuiIngame;func_110327_a(II)V"))
+    private void prePlayerStatsRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
+        applyBrightness();
+    }
+
+    @Inject(method = "renderGameOverlay",
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/src/GuiIngame;func_110327_a(II)V",
+                    shift = At.Shift.AFTER))
+    private void postPlayerStatsRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
+        resetColor();
+    }
 
     // --- XP bar dimming ---
     @Inject(method = "renderGameOverlay",
@@ -108,8 +135,7 @@ public abstract class GuiIngameMixin {
 
     @Inject(method = "renderGameOverlay",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/src/Profiler;endSection()V",
-                    shift = At.Shift.BEFORE))
+                    target = "Lnet/minecraft/src/Profiler;endSection()V"))
     private void postXpRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
         resetColor();
     }
@@ -118,16 +144,14 @@ public abstract class GuiIngameMixin {
     @Inject(method = "renderGameOverlay",
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/src/GuiIngame;drawTexturedModalRect(IIIIII)V",
-                    ordinal = 0,
-                    shift = At.Shift.BEFORE))
+                    ordinal = 0))
     private void preHotbarRender(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
         applyBrightness();
     }
 
     @Inject(method = "renderGameOverlay",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/src/RenderHelper;enableGUIStandardItemLighting()V",
-                    shift = At.Shift.BEFORE))
+                    target = "Lnet/minecraft/src/RenderHelper;enableGUIStandardItemLighting()V"))
     private void postHotbarRender(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
         resetColor();
     }
@@ -135,8 +159,7 @@ public abstract class GuiIngameMixin {
     // --- Inventory slot + item damage bar dimming ---
     @Inject(method = "renderGameOverlay",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/src/GuiIngame;renderInventorySlot(IIIF)V",
-                    shift = At.Shift.BEFORE))
+                    target = "Lnet/minecraft/src/GuiIngame;renderInventorySlot(IIIF)V"))
     private void preInventorySlotRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
         applyBrightness();
     }
@@ -152,8 +175,7 @@ public abstract class GuiIngameMixin {
     // --- Chat display dimming ---
     @Inject(method = "renderGameOverlay",
             at = @At(value = "INVOKE",
-                    target = "Lnet/minecraft/src/GuiNewChat;drawChat(I)V",
-                    shift = At.Shift.BEFORE))
+                    target = "Lnet/minecraft/src/GuiNewChat;drawChat(I)V"))
     private void preChatRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
         applyBrightness();
     }
@@ -165,5 +187,4 @@ public abstract class GuiIngameMixin {
     private void postChatRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
         resetColor();
     }
-
 }
