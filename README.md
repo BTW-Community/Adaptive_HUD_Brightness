@@ -11,7 +11,7 @@ This Better Than Wolves CE 3.0.0 addon dynamically adjusts the brightness of the
 
 ### ✨ Dynamic Brightness
 
-* The HUD responds to the light level at the player's eye position, making low-light areas darker and bright areas fully visible.
+* The HUD responds to the light level at the player's eye position, becoming darker as you enter into darkness.
 * Vanilla blocks and ambient light influence HUD brightness naturally—torches, sunlight, and even moon phases affect how bright your interface appears.
 * The effect is limited to the HUD; it does **not** affect world lighting or gameplay mechanics.
 
