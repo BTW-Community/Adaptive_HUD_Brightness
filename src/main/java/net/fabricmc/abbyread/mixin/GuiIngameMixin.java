@@ -67,8 +67,7 @@ public abstract class GuiIngameMixin {
             float freelook = (float) getFreelookFacMethod.invoke(null);
             return 1.0F - Math.min(zoom + freelook, 1.0F);
         } catch (Exception e) {
-            // Fallback if reflection fails
-            return 1.0F;
+            return 1.0F; // fallback
         }
     }
 
@@ -80,8 +79,14 @@ public abstract class GuiIngameMixin {
     }
 
     @Unique
-    private void applyBrightness() {
+    private void applyCrosshairBrightness() {
         float fac = getFreeLookFactor() * getHudBrightness();
+        GL11.glColor4f(fac, fac, fac, 1.0F);
+    }
+
+    @Unique
+    private void applyHudBrightness() {
+        float fac = getHudBrightness();
         GL11.glColor4f(fac, fac, fac, 1.0F);
     }
 
@@ -96,7 +101,7 @@ public abstract class GuiIngameMixin {
                     target = "Lnet/minecraft/src/GuiIngame;drawTexturedModalRect(IIIIII)V",
                     ordinal = 2))
     private void crosshairGLBegin(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
-        applyBrightness();
+        applyCrosshairBrightness();
     }
 
     @Inject(method = "renderGameOverlay(FZII)V",
@@ -113,7 +118,7 @@ public abstract class GuiIngameMixin {
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/src/GuiIngame;func_110327_a(II)V"))
     private void prePlayerStatsRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
-        applyBrightness();
+        applyHudBrightness();
     }
 
     @Inject(method = "renderGameOverlay",
@@ -130,7 +135,7 @@ public abstract class GuiIngameMixin {
                     target = "Lnet/minecraft/src/PlayerControllerMP;func_78763_f()Z",
                     shift = At.Shift.AFTER))
     private void preXpRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
-        applyBrightness();
+        applyHudBrightness();
     }
 
     @Inject(method = "renderGameOverlay",
@@ -146,7 +151,7 @@ public abstract class GuiIngameMixin {
                     target = "Lnet/minecraft/src/GuiIngame;drawTexturedModalRect(IIIIII)V",
                     ordinal = 0))
     private void preHotbarRender(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
-        applyBrightness();
+        applyHudBrightness();
     }
 
     @Inject(method = "renderGameOverlay",
@@ -161,7 +166,7 @@ public abstract class GuiIngameMixin {
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/src/GuiIngame;renderInventorySlot(IIIF)V"))
     private void preInventorySlotRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
-        applyBrightness();
+        applyHudBrightness();
     }
 
     @Inject(method = "renderGameOverlay",
@@ -177,7 +182,7 @@ public abstract class GuiIngameMixin {
             at = @At(value = "INVOKE",
                     target = "Lnet/minecraft/src/GuiNewChat;drawChat(I)V"))
     private void preChatRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
-        applyBrightness();
+        applyHudBrightness();
     }
 
     @Inject(method = "renderGameOverlay",
