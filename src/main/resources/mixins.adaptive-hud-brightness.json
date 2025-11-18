@@ -3,15 +3,14 @@
   "minVersion": "0.8",
   "package": "net.fabricmc.abbyread.mixin",
   "compatibilityLevel": "JAVA_17",
-  "mixins": [
-    "RenderBlocksMixin",
-    "RenderItemMixin"
-  ],
+  "mixins": [],
   "client": [
     "FontRendererMixin",
     "GuiIngameMixin",
     "GuiScreenAccessor",
-    "MinecraftAccessor"
+    "MinecraftAccessor",
+    "RenderBlocksMixin",
+    "RenderItemMixin"
   ],
   "injectors": {
     "defaultRequire": 0
