@@ -99,52 +99,69 @@ public abstract class GuiIngameMixin {
 
     // --- XP bar dimming ---
     @Inject(method = "renderGameOverlay",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/src/PlayerControllerMP;func_78763_f()Z", shift = At.Shift.AFTER))
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/src/PlayerControllerMP;func_78763_f()Z",
+                    shift = At.Shift.AFTER))
     private void preXpRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
         applyBrightness();
     }
 
     @Inject(method = "renderGameOverlay",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/src/Profiler;endSection()V", shift = At.Shift.BEFORE))
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/src/Profiler;endSection()V",
+                    shift = At.Shift.BEFORE))
     private void postXpRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
         resetColor();
     }
 
     // --- Hotbar dimming ---
     @Inject(method = "renderGameOverlay",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/src/GuiIngame;drawTexturedModalRect(IIIIII)V", ordinal = 0, shift = At.Shift.BEFORE))
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/src/GuiIngame;drawTexturedModalRect(IIIIII)V",
+                    ordinal = 0,
+                    shift = At.Shift.BEFORE))
     private void preHotbarRender(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
         applyBrightness();
     }
 
     @Inject(method = "renderGameOverlay",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/src/RenderHelper;enableGUIStandardItemLighting()V", shift = At.Shift.BEFORE))
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/src/RenderHelper;enableGUIStandardItemLighting()V",
+                    shift = At.Shift.BEFORE))
     private void postHotbarRender(float par1, boolean par2, int par3, int par4, CallbackInfo ci) {
         resetColor();
     }
 
     // --- Inventory slot + item damage bar dimming ---
     @Inject(method = "renderGameOverlay",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/src/GuiIngame;renderInventorySlot(IIIF)V", shift = At.Shift.BEFORE))
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/src/GuiIngame;renderInventorySlot(IIIF)V",
+                    shift = At.Shift.BEFORE))
     private void preInventorySlotRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
         applyBrightness();
     }
 
     @Inject(method = "renderGameOverlay",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/src/GuiIngame;renderInventorySlot(IIIF)V", shift = At.Shift.AFTER))
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/src/GuiIngame;renderInventorySlot(IIIF)V",
+                    shift = At.Shift.AFTER))
     private void postInventorySlotRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
         resetColor();
     }
 
     // --- Chat display dimming ---
     @Inject(method = "renderGameOverlay",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/src/GuiNewChat;drawChat(I)V", shift = At.Shift.BEFORE))
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/src/GuiNewChat;drawChat(I)V",
+                    shift = At.Shift.BEFORE))
     private void preChatRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
         applyBrightness();
     }
 
     @Inject(method = "renderGameOverlay",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/src/GuiNewChat;drawChat(I)V", shift = At.Shift.AFTER))
+            at = @At(value = "INVOKE",
+                    target = "Lnet/minecraft/src/GuiNewChat;drawChat(I)V",
+                    shift = At.Shift.AFTER))
     private void postChatRender(float partialTicks, boolean hasScreen, int mouseX, int mouseY, CallbackInfo ci) {
         resetColor();
     }
